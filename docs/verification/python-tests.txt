@@ -1,0 +1,11 @@
+test_health_returns_200_and_service_identity (test_app.HealthEndpointTests) ... 127.0.0.1 - - [26/Sep/2026 18:12:41] "GET /health HTTP/1.1" 200 -
+ok
+test_unknown_and_business_routes_are_absent (test_app.HealthEndpointTests) ... 127.0.0.1 - - [26/Sep/2026 18:12:41] "GET /missing HTTP/1.1" 404 -
+127.0.0.1 - - [26/Sep/2026 18:12:41] "GET /orders HTTP/1.1" 404 -
+127.0.0.1 - - [26/Sep/2026 18:12:41] "GET /payments HTTP/1.1" 404 -
+ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.506s
+
+OK

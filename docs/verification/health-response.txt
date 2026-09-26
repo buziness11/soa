@@ -1,0 +1,7 @@
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.13.15
+Date: Sat, 26 Sep 2026 18:14:23 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 34
+
+{"status":"ok","service":"orders"}

@@ -1,0 +1,49 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  17.92kB
+Step 1/8 : FROM python:3.13-slim
+3.13-slim: Pulling from library/python
+3d9fb7471420: Pulling fs layer
+264ba3d8ae19: Pulling fs layer
+4a43a40b039e: Pulling fs layer
+4a43a40b039e: Download complete
+3d9fb7471420: Download complete
+3d9fb7471420: Pull complete
+6fe502abe367: Download complete
+650370485ae3: Download complete
+264ba3d8ae19: Download complete
+4a43a40b039e: Pull complete
+264ba3d8ae19: Pull complete
+Digest: sha256:7c61056e61ac89e852de05f3dc6fa51a6dd2181797bceed46aa725dd7cb2cd3b
+Status: Downloaded newer image for python:3.13-slim
+ ---> 7c61056e61ac
+Step 2/8 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1
+ ---> Running in 44f05b54008b
+ ---> Removed intermediate container 44f05b54008b
+ ---> 01b5792dc2f5
+Step 3/8 : WORKDIR /app
+ ---> Running in 33ee42a54a1a
+ ---> Removed intermediate container 33ee42a54a1a
+ ---> fbfe9c2f3807
+Step 4/8 : COPY services/orders/app.py /app/app.py
+ ---> 94292e8c05a1
+Step 5/8 : USER 10001:10001
+ ---> Running in 287603ac0f6d
+ ---> Removed intermediate container 287603ac0f6d
+ ---> 936ecac5c7e9
+Step 6/8 : EXPOSE 8080
+ ---> Running in 16adb73d189e
+ ---> Removed intermediate container 16adb73d189e
+ ---> 66ebedb2168d
+Step 7/8 : HEALTHCHECK --interval=10s --timeout=3s --start-period=3s --retries=3     CMD python -c "import urllib.request; r = urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2); assert r.status == 200"
+ ---> Running in 84a1b09de94b
+ ---> Removed intermediate container 84a1b09de94b
+ ---> 86961025ccc6
+Step 8/8 : CMD ["python", "app.py"]
+ ---> Running in ad0e99c81001
+ ---> Removed intermediate container ad0e99c81001
+ ---> 4c45d4682d08
+Successfully built 4c45d4682d08
+Successfully tagged soa-hw1-orders:local
