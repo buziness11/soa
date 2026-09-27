@@ -1,5 +1,5 @@
 #!/bin/sh
-# Требуются Docker с Compose v2 и curl. Запускайте из корня репозитория.
+# Требуются Docker с Compose v2 и curl. Запускайте из папки сервиса.
 set -eu
 
 project="marketplace-homework-check-$$"

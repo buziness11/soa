@@ -11,12 +11,15 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: '02_2_балла_Сервис'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
       - name: Проверка HTTP-контракта
-        run: python -m unittest discover -s services/orders -p 'test_*.py' -v
+        run: python -m unittest -v test_app.py
       - name: Сборка Docker, запуск и проверка /health
-        run: sh scripts/check.sh
+        run: sh check.sh

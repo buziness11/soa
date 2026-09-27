@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
-COPY services/orders/app.py /app/app.py
+COPY app.py /app/app.py
 
 USER 10001:10001
 EXPOSE 8080
