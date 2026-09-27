@@ -14,7 +14,7 @@ System_Boundary(marketplace, "Маркетплейс") {
   Container(orders, "Orders Service", "Python", "Заказы, снимки и оркестрация; реализован только /health")
   Container(payments, "Payments Service", "Python", "Расчёт и учёт платежей и возвратов, адаптер PSP")
   Container(notifications, "Notifications Service", "Python", "Отправка из очереди; без собственной БД")
-  ContainerQueue(broker, "Event Broker", "RabbitMQ", "Очереди событий и команд; at least once")
+  ContainerQueue(broker, "Event Broker", "RabbitMQ", "Очереди сообщений для Notify и Pay")
   ContainerDb(usersdb, "Users DB", "PostgreSQL", "Профили и роли")
   ContainerDb(catalogdb, "Catalog DB", "PostgreSQL", "Товары и резервы")
   ContainerDb(ordersdb, "Orders DB", "PostgreSQL", "Заказы, снимки, outbox и inbox")
