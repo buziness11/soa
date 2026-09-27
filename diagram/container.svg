@@ -78,7 +78,7 @@
 </text>
 <text x="325.0" y="938" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="normal" fill="#172b43">
 <tspan x="325.0" dy="0">Учётные записи, роли,</tspan>
-<tspan x="325.0" dy="24.7">контакты, предпочтения</tspan>
+<tspan x="325.0" dy="24.7">контакты, категории</tspan>
 </text>
 <rect x="570" y="840" width="310" height="150" rx="10" fill="#e7eff9" stroke="#33669d" stroke-width="2" />
 <text x="725.0" y="874" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#172b43">
@@ -103,7 +103,7 @@
 <tspan x="1235.0" dy="24.7">управление процессом</tspan>
 </text>
 <polyline points="590,840 590,785 440,785 440,840" fill="none" stroke="#475569" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#sync)" />
-<text x="517" y="770" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569" stroke="white" stroke-width="7" paint-order="stroke">Роль и предпочтения • HTTPS</text>
+<text x="517" y="770" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569" stroke="white" stroke-width="7" paint-order="stroke">Роль и категории • HTTPS</text>
 <polyline points="1110,840 1110,745 210,745 210,840" fill="none" stroke="#475569" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#sync)" />
 <text x="465" y="733" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569" stroke="white" stroke-width="7" paint-order="stroke">Проверка пользователя • HTTPS</text>
 <polyline points="1070,900 880,900" fill="none" stroke="#475569" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#sync)" />
@@ -117,7 +117,7 @@
 <tspan x="325.0" dy="0">[Container: PostgreSQL]</tspan>
 </text>
 <text x="325.0" y="1178" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" font-weight="normal" fill="#172b43">
-<tspan x="325.0" dy="0">Профили и роли</tspan>
+<tspan x="325.0" dy="0">Профили, роли, категории</tspan>
 </text>
 <polyline points="325,990 325,1080" fill="none" stroke="#475569" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#sync)" />
 <text x="325" y="1041" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569" stroke="white" stroke-width="7" paint-order="stroke">Чтение / запись • SQL</text>

@@ -1,7 +1,0 @@
-Проверено на hse после переноса файлов: 2026-09-27 13:49 UTC
-Два HTTP-теста: OK.
-Docker build: успешно.
-Новый контейнер: healthy.
-GET /health: 200 OK
-{"status":"ok","service":"orders"}
-Проверка выполнена через Docker Engine; Compose и CI не запускались.
