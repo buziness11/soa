@@ -4,7 +4,7 @@ LAYOUT_TOP_DOWN()
 title Маркетплейс — C4 Container — целевая архитектура
 Person(buyer, "Покупатель", "Лента, заказы и оплата")
 Person(seller, "Продавец", "Управляет товарами")
-System_Ext(psp, "Платёжный провайдер", "Hosted checkout, эквайринг и webhook")
+System_Ext(psp, "Payment Service Provider (PSP)", "Hosted checkout, эквайринг и webhook")
 System_Ext(provider, "Email / Push провайдер", "Доставка уведомлений")
 System_Boundary(marketplace, "Маркетплейс") {
   Container(ui, "Web UI", "React / TypeScript", "Кабинет покупателя и продавца")
