@@ -195,8 +195,8 @@
 <text x="1460" y="1010" text-anchor="start" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">OrderPlaced, RefundRequested,</text>
 <text x="1460" y="1034" text-anchor="start" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">OrderStatusChanged • AMQP</text>
 <polyline points="1130,1330 1020,1330 1020,940 1070,940" fill="none" stroke="#9a5b18" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#async)" />
-<text x="855" y="1290" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">События оплаты / возврата,</text>
-<text x="855" y="1314" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">ReservationExpired • AMQP</text>
+<text x="855" y="1290" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">События оплаты / возврата</text>
+<text x="855" y="1314" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">AMQP</text>
 <polyline points="1400,1390 1490,1390 1490,1190 1550,1190" fill="none" stroke="#9a5b18" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#async)" />
 <text x="1462" y="1340" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">Заказ / возврат</text>
 <text x="1462" y="1364" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">AMQP</text>
@@ -207,8 +207,6 @@
 <text x="1615" y="1589" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">OrderStatusChanged • AMQP</text>
 <polyline points="1620,1765 1620,1795 100,1795 100,925 170,925" fill="none" stroke="#475569" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#sync)" />
 <text x="635" y="1779" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569" stroke="white" stroke-width="7" paint-order="stroke">Контакты получателя • HTTPS / JSON</text>
-<polyline points="625,990 625,1030 530,1030 530,1410 1070,1410" fill="none" stroke="#9a5b18" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="9 6" marker-end="url(#async)" />
-<text x="785" y="1390" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9a5b18" stroke="white" stroke-width="7" paint-order="stroke">ReservationExpired • AMQP</text>
 <rect x="2030" y="1090" width="335" height="160" rx="10" fill="#eeeeee" stroke="#777777" stroke-width="2" />
 <text x="2197.5" y="1124" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="bold" fill="#172b43">
 <tspan x="2197.5" dy="0">Платёжный провайдер</tspan>
