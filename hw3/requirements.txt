@@ -1,0 +1,5 @@
+grpcio==1.75.0
+grpcio-tools==1.75.0
+protobuf==6.32.1
+psycopg[binary]==3.2.9
+redis==5.2.1

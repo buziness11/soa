@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package flight;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+enum FlightStatus {
+  SCHEDULED = 0;
+  DEPARTED = 1;
+  CANCELLED = 2;
+  COMPLETED = 3;
+}
+
+enum ReservationStatus {
+  ACTIVE = 0;
+  RELEASED = 1;
+  EXPIRED = 2;
+}
+
+message Flight {
+  int64 flight_id = 1;
+  string flight_number = 2;
+  string airline = 3;
+  string origin = 4;       // IATA-код.
+  string destination = 5;  // IATA-код.
+  google.protobuf.Timestamp departure_time = 6;
+  google.protobuf.Timestamp arrival_time = 7;
+  int32 total_seats = 8;
+  int32 available_seats = 9;
+  int64 price = 10;  // Цена одного места в копейках.
+  FlightStatus status = 11;
+}
+
+message SeatReservation {
+  int64 id = 1;
+  int64 flight_id = 2;
+  int64 booking_id = 3;
+  int32 seat_count = 4;
+  ReservationStatus status = 5;
+}
+
+message SearchFlightsRequest {
+  string origin = 1;
+  string destination = 2;
+  google.protobuf.Timestamp date = 3;  // Необязательно; начало дня в UTC.
+}
+
+message SearchFlightsResponse {
+  repeated Flight flights = 1;
+}
+
+message GetFlightRequest {
+  int64 flight_id = 1;
+}
+
+message ReserveSeatsRequest {
+  int64 flight_id = 1;
+  int32 seat_count = 2;
+  int64 booking_id = 3;
+}
+
+message ReleaseReservationRequest {
+  int64 booking_id = 1;
+}
+
+service FlightService {
+  // Только SCHEDULED; без даты — все даты. INVALID_ARGUMENT: неверные параметры.
+  rpc SearchFlights(SearchFlightsRequest) returns (SearchFlightsResponse);
+
+  // NOT_FOUND: рейс не найден.
+  rpc GetFlight(GetFlightRequest) returns (Flight);
+
+  // Атомарно уменьшает available_seats и создаёт ACTIVE-резервацию.
+  // Повтор с тем же booking_id и параметрами возвращает существующую резервацию.
+  // NOT_FOUND: рейса нет. RESOURCE_EXHAUSTED: мест недостаточно.
+  // INVALID_ARGUMENT: seat_count <= 0 или booking_id занят с другими параметрами.
+  rpc ReserveSeats(ReserveSeatsRequest) returns (SeatReservation);
+
+  // Возвращает места, ставит RELEASED. Повторная отмена уже RELEASED успешна.
+  // NOT_FOUND: резервации нет или она EXPIRED.
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (google.protobuf.Empty);
+}
