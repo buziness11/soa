@@ -1,0 +1,34 @@
+@startuml AContainers
+!include <C4/C4_Container>
+LAYOUT_LEFT_RIGHT()
+title Вариант A — задания в PostgreSQL
+Person(user, "Пользователь", "Настройки и получение уведомлений")
+Person(support, "Поддержка банка", "Проверка истории доставки")
+System_Ext(bank, "Сервисы банка", "Стабильный source_event_id; повторяют неполученный ответ")
+System_Ext(app, "Приложение банка", "Хранит входящие по notification_id; отправляет ACK")
+System_Ext(providers, "Push / SMS / email", "Отправка, статус, подтверждения; гарантии зависят от контракта")
+System_Boundary(platform, "Notification Platform A") {
+  Container(api, "Notification API", "Python / FastAPI", "Приём, настройки, статусы, ACK и callback; несколько экземпляров")
+  ContainerDb(db, "Platform DB", "PostgreSQL", "Уведомления, задания, попытки, настройки, история; синхронная реплика")
+  Container(critical, "Critical Workers", "Python / Psycopg", "Ближайшие задания; retry, failover, сверка статуса; адаптеры каналов внутри")
+  Container(bulk, "Bulk Workers", "Python / Psycopg", "Сервисные и маркетинговые отправки; ограничение скорости кампании")
+  Container(monitor, "Мониторинг", "Prometheus / Alertmanager / Grafana", "Задержки, очередь, ошибки, стоимость, оповещения поддержки")
+}
+Rel(user, app, "Читает уведомления и меняет настройки")
+Rel(bank, api, "Передаёт уведомления / кампании", "HTTPS")
+Rel(app, api, "Настройки и подтверждение сохранения", "HTTPS")
+Rel(support, api, "Запрашивает историю notification_id", "HTTPS")
+Rel(api, db, "Атомарно сохраняет уведомление и задание; обновляет статус", "SQL")
+Rel(critical, db, "Берёт задания, проверяет настройки, фиксирует попытки", "SQL")
+Rel(bulk, db, "Берёт только некритичные задания", "SQL")
+Rel(critical, providers, "Отправка / запрос статуса", "HTTPS")
+Rel(bulk, providers, "Отправка / запрос статуса", "HTTPS")
+Rel(providers, app, "Push с notification_id", "Push")
+Rel(providers, user, "SMS / email")
+Rel(providers, api, "Подтверждения и ошибки", "HTTPS callback")
+Rel(monitor, api, "Собирает метрики", "HTTPS")
+Rel(monitor, critical, "Собирает метрики", "HTTPS")
+Rel(monitor, bulk, "Собирает метрики", "HTTPS")
+Rel(monitor, support, "Оповещает о недоставке")
+SHOW_LEGEND()
+@enduml

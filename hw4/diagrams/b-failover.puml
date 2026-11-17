@@ -1,0 +1,47 @@
+@startuml BFailover
+title Вариант B — сбой activity после отправки и failover
+autonumber
+participant "Temporal Service" as T
+participant "Critical Workers" as W
+database "Platform DB" as DB
+participant "Push provider" as Push
+participant "SMS provider" as SMS
+participant "Notification API" as API
+participant "Outbox Relay" as Relay
+note over T,DB: Workflow запущен; attempt push уже SENDING
+W -> Push: send(notification_id, attempt_id)
+Push --x W: Ответ потерян; worker завершился
+T -> W: Повтор activity с тем же attempt_id
+W -> DB: Найти SENDING без сохранённого результата
+DB --> W: Исход неизвестен; запрещена слепая повторная отправка
+W -> Push: Сверить статус, если возможно
+Push --> W: Результат неизвестен
+W -> DB: attempt -> UNKNOWN
+W -> T: UNKNOWN; durable timer до 10 секунд от начала push
+T -> W: Таймер сработал; workflow планирует activity SMS
+W -> DB: Попытаться атомарно разрешить SMS:\nпроверить delivery_confirmed и актуальные настройки
+alt delivery_confirmed уже сохранён
+  DB --> W: Отменить SMS
+  W -> T: Завершить workflow
+else Разрешена отправка SMS
+  DB --> W: commit dispatch_committed(SMS), duplicate_risk;\nattempt SMS -> SENDING
+  W -> SMS: send(notification_id, sms_attempt_id)
+  SMS --> W: accepted(provider_message_id)
+  W -> DB: attempt SMS -> ACCEPTED
+  W -> T: Ждать подтверждение
+  SMS -> API: Квалифицированный handset DLR
+  API -> DB: Транзакция: DELIVERED + evidence + signal outbox
+  Relay -> DB: Прочитать signal outbox
+  Relay -> T: Signal evidence(event_id)
+  T --> Relay: Сохранено
+  Relay -> DB: Пометить переданным
+  T -> W: Workflow task c signal
+  W -> T: Завершить workflow
+end
+note over DB,SMS
+Поздний ACK всегда записывается через API в Platform DB.
+После dispatch_committed остановка уже отправляемой SMS не гарантирована.
+Все каналы исчерпаны: PENDING + channels_exhausted; в 60 с UNCONFIRMED.
+DELIVERED_LATE тоже останавливает невыданные отправки.
+end note
+@enduml

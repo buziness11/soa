@@ -1,0 +1,35 @@
+@startuml AMain
+title Вариант A — основной сценарий push
+autonumber
+actor "Сервис банка" as Bank
+participant "Notification API" as API
+database "Platform DB" as DB
+participant "Critical Workers" as Worker
+participant "Push provider" as Push
+participant "Приложение банка" as App
+Bank -> API: critical(source_event_id, user_id, payload)
+API -> DB: Транзакция: dedupe + notification(PENDING) + job
+DB --> API: Синхронно подтверждённый commit
+API --> Bank: accepted(notification_id)
+Worker -> DB: Взять due job; назначить lease и generation
+DB --> Worker: Задание и актуальные настройки
+Worker -> DB: Атомарно: проверить delivery_confirmed / settings / generation;\nсоздать attempt(PREPARED), channel_deadline = start + 10 s;\ndispatch_committed -> SENDING
+DB --> Worker: Разрешение на одну попытку
+note over Worker,DB
+Транзакция завершена до сетевого вызова.
+Повтор захвата SENDING ведёт к сверке, а не новой отправке.
+end note
+Worker -> Push: send(notification_id, attempt_id)
+Push --> Worker: accepted(provider_message_id)
+Worker -> DB: attempt -> ACCEPTED; next_action_at = channel_deadline
+Push -> App: push(notification_id, payload)
+App -> App: Сохранить входящее один раз по notification_id
+App -> API: ACK(notification_id, attempt_id)
+API -> DB: Атомарно: evidence + notification -> DELIVERED;\nотменить задания без dispatch_committed
+DB --> API: commit
+API --> App: ACK сохранён
+note over API,DB
+ACK может прийти раньше accepted.
+DELIVERED не заменяется более ранним состоянием.
+end note
+@enduml

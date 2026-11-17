@@ -1,0 +1,39 @@
+@startuml AFailover
+title Вариант A — неопределённый исход push и failover на SMS
+autonumber
+participant "Critical Workers" as Worker
+database "Platform DB" as DB
+participant "Push provider" as Push
+participant "SMS provider" as SMS
+participant "Notification API" as API
+participant "Приложение банка" as App
+note over Worker,DB: Уведомление принято; attempt push уже SENDING
+Worker -> Push: send(notification_id, attempt_id)
+Push --x Worker: Ответ потерян / timeout
+Worker -> DB: attempt -> UNKNOWN; next_action_at
+loop До 10 секунд от начала попытки
+  Worker -> Push: Узнать статус, если контракт позволяет
+  Push --> Worker: Нет окончательного результата
+  Worker -> DB: Сверить app ACK и дедлайн
+end
+Worker -> DB: Попытаться атомарно разрешить SMS:\nпроверить delivery_confirmed и актуальные настройки
+alt ACK зафиксирован до dispatch_committed SMS
+  DB --> Worker: Отмена отправки SMS
+else SMS разрешён раньше ACK
+  DB --> Worker: commit dispatch_committed(SMS), duplicate_risk;\nattempt SMS -> SENDING
+  Worker -> SMS: send(notification_id, sms_attempt_id)
+  SMS --> Worker: accepted(provider_message_id)
+  Worker -> DB: attempt SMS -> ACCEPTED
+  SMS -> API: Квалифицированный handset DLR
+  API -> DB: evidence; notification -> DELIVERED; отменить невыданные задания
+  Push -> App: Поздний push(notification_id)
+  App -> API: Поздний ACK
+  API -> DB: Дополнить evidence; не менять DELIVERED;\nзафиксировать наблюдаемый межканальный повтор
+  note over SMS,App: Уже отправленную SMS и поздний push атомарно отменить нельзя.
+end
+note over Worker,Push
+При окончательном отказе push ожидание 10 секунд пропускается.
+Все каналы исчерпаны: PENDING + channels_exhausted; в 60 с UNCONFIRMED.
+Сильный ACK отменяет невыданные отправки, включая DELIVERED_LATE.
+end note
+@enduml
