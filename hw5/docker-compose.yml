@@ -1,0 +1,152 @@
+name: cinema-hw5
+
+x-python: &python
+  image: cinema-hw5-python:1
+  pull_policy: never
+
+x-db-env: &db-env
+  CLICKHOUSE_URL: http://clickhouse:8123
+  CLICKHOUSE_USER: cinema
+  CLICKHOUSE_PASSWORD: cinema-local
+  POSTGRES_DSN: postgresql://cinema:cinema-local@postgres:5432/cinema
+
+x-api-probe: &api-probe
+  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
+  interval: 5s
+  timeout: 4s
+  retries: 30
+
+services:
+  kafka:
+    image: apache/kafka:3.9.1
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.8.0
+    depends_on:
+      kafka: {condition: service_healthy}
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_HEAP_OPTS: "-Xms128m -Xmx256m"
+    ports:
+      - "127.0.0.1:${REGISTRY_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/subjects"]
+      interval: 5s
+      timeout: 4s
+      retries: 36
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8@sha256:0152dd511befe6a2c2ef53e930726179669b08116da78500b37c51c96ff5ee77
+    entrypoint:
+      - /bin/bash
+      - -ec
+      - |
+        install -D -m 0644 -o clickhouse -g clickhouse /schemas/movie_event.proto /var/lib/clickhouse/format_schemas/movie_event.proto
+        exec /entrypoint.sh
+    environment:
+      CLICKHOUSE_USER: cinema
+      CLICKHOUSE_PASSWORD: cinema-local
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./schemas:/schemas:ro
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "cinema", "--password", "cinema-local", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+
+  postgres:
+    image: postgres:17.5-alpine
+    environment:
+      POSTGRES_DB: cinema
+      POSTGRES_USER: cinema
+      POSTGRES_PASSWORD: cinema-local
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "cinema", "-d", "cinema"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+
+  bootstrap:
+    <<: *python
+    build: .
+    pull_policy: build
+    command: ["python", "-m", "producer.bootstrap"]
+    depends_on:
+      schema-registry: {condition: service_healthy}
+
+  migrate:
+    <<: *python
+    environment: *db-env
+    command: ["python", "-m", "sql.migrate"]
+    depends_on:
+      bootstrap: {condition: service_completed_successfully}
+      clickhouse: {condition: service_healthy}
+      postgres: {condition: service_healthy}
+
+  movie-service:
+    <<: *python
+    command: ["uvicorn", "producer.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    environment:
+      GENERATOR_INTERVAL_SECONDS: ${GENERATOR_INTERVAL_SECONDS:-5}
+    ports:
+      - "127.0.0.1:${MOVIE_PORT:-8000}:8000"
+    healthcheck: *api-probe
+
+  aggregation-service:
+    <<: *python
+    command: ["uvicorn", "aggregation.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    environment:
+      <<: *db-env
+      AGGREGATION_INTERVAL_SECONDS: ${AGGREGATION_INTERVAL_SECONDS:-300}
+    ports:
+      - "127.0.0.1:${AGGREGATION_PORT:-8001}:8000"
+    healthcheck: *api-probe
+
+  tests:
+    <<: *python
+    profiles: ["test"]
+    command: ["python", "-m", "unittest", "discover", "-s", "tests", "-v"]
+    environment: *db-env
+    depends_on:
+      movie-service: {condition: service_healthy}
+      aggregation-service: {condition: service_healthy}
+
+volumes:
+  kafka-data:
+  clickhouse-data:
+  postgres-data:
